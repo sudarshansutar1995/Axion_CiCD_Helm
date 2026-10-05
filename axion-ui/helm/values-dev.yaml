@@ -8,7 +8,7 @@ ports:
 
 image: 
  repositary: sudarshanacr.azurecr.io/axion-ui
- tags: d1
+ 
 
 
 metadata:

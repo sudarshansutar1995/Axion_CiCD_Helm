@@ -1,6 +1,0 @@
-apiVersion: v2
-name: datasimulator
-description: Helm chart for Axion Data Temetry_Service
-type: application
-version: 0.1.0
-appVersion: "1.0.0"
