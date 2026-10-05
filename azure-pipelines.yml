@@ -32,5 +32,63 @@ stages:
                     Write-Host "Database connection successful."
           env:
             PGPASSWORD: $(postgresPassword)    
+  - stage: 
+    displayName: Apply_Database_scehma
+    jobs:
+      - job: 
+        displayName: Apply_Database_scehma
         
+        steps:
+        - task: AzureCLI@3
+          inputs:
+            connectionType: 'azureRM'
+            azureSubscription: 'axion-helm-project'
+            scriptType: 'ps'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              Write-Host "Database connection successful."
+                    Write-Host "Applying telemetry schema..."
+              
+                    psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                      -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
+              
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "Schema deployment failed."
+                        exit $LASTEXITCODE
+                    }
+              
+                    Write-Host "Schema deployment successful."
+              
+                env:
+                  PGPASSWORD: $(postgresPassword)
+  - stage: 
+    displayName: Show_table_detail
+    jobs:
+      - job: 
+        displayName: Show_table_detail
+        
+        steps:
+        - task: AzureCLI@3
+          inputs:
+            connectionType: 'azureRM'
+            azureSubscription: 'axion-helm-project'
+            scriptType: 'ps'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              inlineScript: |
+                Write-Host "Showing database table details..."
+              
+                psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                  -c "SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position;"
+              
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "Failed to retrieve database table details."
+                    exit $LASTEXITCODE
+                }
+              
+                Write-Host "Database table details retrieved successfully."
+              
+              env:
+                PGPASSWORD: $(postgresPassword)
+      
 
