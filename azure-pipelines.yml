@@ -46,21 +46,22 @@ stages:
             scriptType: 'ps'
             scriptLocation: 'inlineScript'
             inlineScript: |
-              Write-Host "Database connection successful."
-                    Write-Host "Applying telemetry schema..."
+              inlineScript: |
+                Write-Host "Applying telemetry schema..."
               
-                    psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-                      -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
+                psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                  -v ON_ERROR_STOP=1 `
+                  -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
               
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Schema deployment failed."
-                        exit $LASTEXITCODE
-                    }
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "Schema deployment failed."
+                    exit $LASTEXITCODE
+                }
               
-                    Write-Host "Schema deployment successful."
+                Write-Host "Schema deployment successful."
               
-                env:
-                  PGPASSWORD: $(postgresPassword)
+              env:
+                PGPASSWORD: $(postgresPassword)
   - stage: 
     displayName: Show_table_detail
     jobs:
