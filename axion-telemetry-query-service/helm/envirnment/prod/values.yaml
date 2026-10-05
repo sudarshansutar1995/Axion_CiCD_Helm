@@ -1,0 +1,20 @@
+app: telemetry-pod
+replicas: 3
+minReplicas: 1
+
+ports:
+  containerPort: 8000
+  port: 80
+
+image: 
+ repositary: sudarshanacr.azurecr.io/axion-telemetary-service
+ tags: d1
+
+secretKeyRef:
+  name: telemetry-secret
+
+metadata:
+  name: telemetry-hsa
+  Ingressname: telemetry-ingress
+
+type: ClusterIP
