@@ -1,0 +1,99 @@
+pool: axion-agent
+
+trigger:
+  - none
+
+parameters:
+
+- name: Docker_Build_and_Push_ACR
+  displayName: Docker Build and Push to ACR
+  type: boolean
+  default: false
+
+- name: Deploy_to_KubernetesCluster
+  displayName: Deploy to Kubernetes Cluster
+  type: boolean
+  default: false
+
+- name: Namespace_Environment
+  displayName: Namespace Environment
+  type: string
+  default: dev
+  values:
+  - dev
+  - prod
+
+
+variables:
+- group: Axion-Project_helm
+
+
+stages:
+
+# ============================================================
+# Stage 1 - Docker Build and Push
+# ============================================================
+
+- stage: Docker_Build_and_Push_ACR
+  displayName: Docker Build and Push ACR for Axion UI
+
+  condition: eq('${{ parameters.Docker_Build_and_Push_ACR }}', 'true')
+
+  jobs:
+
+  - job: Docker_Build_Push_UI
+    displayName: Docker Build and Push Axion UI
+
+    steps:
+
+    - task: Docker@2
+      displayName: Build and Push Axion UI Image
+      inputs:
+        containerRegistry: 'docker-acr-svc-connection'
+        repository: 'axion-ui'
+        command: 'buildAndPush'
+        Dockerfile: '**/axion-ui/Dockerfile'
+        tags: |
+          $(Build.BuildId)-BuildId
+
+
+# ============================================================
+# Stage 2 - Helm Deploy
+# ============================================================
+
+- stage: Helm_Deploy_to_Cluster
+  displayName: Helm Deploy Axion UI Service to Kubernetes
+
+  condition: eq('${{ parameters.Deploy_to_KubernetesCluster }}', 'true')
+
+  jobs:
+
+  - job: Helm_Deploy_Axion_UI
+    displayName: Helm Deploy Axion UI
+
+    steps:
+
+    - task: HelmDeploy@1
+      displayName: Helm Upgrade/Install Axion UI
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscription: 'axion-helm-project'
+        azureResourceGroup: 'rg_sudarshan'
+        kubernetesCluster: 'kub-sudarshan'
+
+        namespace: '${{ parameters.Namespace_Environment }}'
+
+        command: 'upgrade'
+        chartType: 'FilePath'
+
+        chartPath: 'axion-ui/helm'
+
+        releaseName: 'axion-ui'
+
+        valueFile: 'axion-ui/helm/values-${{ parameters.Namespace_Environment }}.yaml'
+
+        install: true
+        waitForExecution: false
+
+        arguments: '--create-namespace --set image.tags=$(Build.BuildId)-BuildId'
+
