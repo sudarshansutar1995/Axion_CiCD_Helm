@@ -1,0 +1,40 @@
+pool: axion-agent
+
+trigger:
+  - none
+
+parameters:
+
+- name: containerRegistry
+  displayName: Ingestion_Docker_Build&Push
+  type: boolean
+  default: false
+ 
+
+variables:
+- group: Axion-Project_helm
+
+
+stages:
+  - stage: 
+    displayName: Ingestion_Docker_Build&Push 
+    condition: eq('${{ parameters.containerRegistry }}', 'true')
+    jobs:
+      - job: 
+        displayName: Ingestion_Docker_Build&Push 
+        steps:
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'docker-acr-svc-connection'
+            repository: 'axion-ingestion'
+            command: 'buildAndPush'
+            Dockerfile: '**/axion-ingestion-service/Dockerfile'
+            tags: '$(Build.BuildId)-BuildId'
+        
+        - powershell: |
+              $databaseUrl = "postgresql://$(postgresUser):$(postgresPassword)@$(postgresHost):$(postgresPort)/$(postgresDb)?sslmode=require"
+              Write-Host "##vso[task.setvariable variable=DATABASE_URL;issecret=true]$databaseUrl"
+          displayName: Build DATABASE_URL
+        
+
+        
