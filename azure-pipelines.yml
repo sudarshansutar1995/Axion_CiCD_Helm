@@ -55,25 +55,30 @@ stages:
 
     steps:
     - task: AzureCLI@3
-      displayName: Apply Telemetry Schema
       inputs:
         connectionType: 'azureRM'
         azureSubscription: 'axion-helm-project'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          Write-Host "Applying telemetry schema..."
-
-          psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-            -v ON_ERROR_STOP=1 `
-            -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
-
-          if ($LASTEXITCODE -ne 0) {
-              Write-Error "Schema deployment failed."
-              exit $LASTEXITCODE
-          }
-
-          Write-Host "Schema deployment successful."
+          Write-Host "Checking telemetry table..."
+          
+                $result = psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                  -t -A `
+                  -c "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='telemetry');"
+          
+                $result = $result.Trim()
+          
+                Write-Host "Telemetry table exists: $result"
+          
+                if ($result -eq "t") {
+                    Write-Host "Telemetry table already exists."
+                    Write-Host "##vso[task.setvariable variable=TelemetryTableExists;isOutput=true]true"
+                }
+                else {
+                    Write-Host "Telemetry table does not exist."
+                    Write-Host "##vso[task.setvariable variable=TelemetryTableExists;isOutput=true]false"
+                }
 
       env:
         PGPASSWORD: $(postgresPassword)
