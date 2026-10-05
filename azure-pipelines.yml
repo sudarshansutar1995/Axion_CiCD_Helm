@@ -1,0 +1,30 @@
+pool: axion-agent
+trigger:
+  - none
+stages:
+  - stage: 
+    displayName: Database_connection
+    jobs:
+      - job: 
+        displayName: Database_connection
+        steps:
+        - task: AzureCLI@3
+          inputs:
+            connectionType: 'azureRM'
+            azureSubscription: 'axion-helm-project'
+            scriptType: 'ps'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              Write-Host "Testing PostgreSQL connection..."
+              
+                    psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                      -c "SELECT current_database();"
+              
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "Database connection failed."
+                        exit $LASTEXITCODE
+                    }
+              
+                    Write-Host "Database connection successful."
+        
+
