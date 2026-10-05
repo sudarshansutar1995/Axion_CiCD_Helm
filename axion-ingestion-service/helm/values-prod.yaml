@@ -7,7 +7,7 @@ ports:
   port: 80
 
 image: 
- repositary: sudarshanacr.azurecr.io/axion-ingestion-service
+ repositary: sudarshanacr.azurecr.io/axion-ingestion
 
 
 secretKeyRef:
