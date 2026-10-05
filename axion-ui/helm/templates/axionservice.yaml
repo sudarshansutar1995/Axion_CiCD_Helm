@@ -1,11 +1,17 @@
+```yaml
 apiVersion: v1
 kind: Service
+
 metadata:
-  name: axionui-service-pod
+  name: {{ .Values.metadata.name }}
+
 spec:
   selector:
-    app: {{.Values.app}}
+    app: {{ .Values.app }}
+
   ports:
-    - port: {{.Values.ports.port}}
-      targetPort: {{.Values.ports.containerPort}}
-  type: {{.Values.type}}
+    - port: {{ .Values.ports.port }}
+      targetPort: {{ .Values.ports.containerPort }}
+
+  type: {{ .Values.type }}
+```
