@@ -67,7 +67,7 @@ stages:
             valueFile: 'axion-ingestion-service/helm/values-${{ parameters.Namespace_Environment }}.yaml'
             install: true
             waitForExecution: false
-            arguments: '--create-namespace'
+            arguments: '--create-namespace --set image.tags=$(Build.BuildId)-BuildId'
 
 
         
