@@ -1,21 +1,22 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-
 metadata:
-  name: {{.Values.metadata.Ingressname}}
-  namespace: default
-
+  name: {{ .Values.metadata.ingressName }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: azure-application-gateway
 spec:
   ingressClassName: azure-application-gateway
-
   rules:
-    - host: axionui.sudsutar.site
+    - host: {{ .Values.ingress.host }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: axionui-service-pod
+                name: {{ .Values.metadata.name }}
                 port:
-                  number: 80
+                  number: {{ .Values.ports.port }}
+{{- end }}
