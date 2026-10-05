@@ -8,4 +8,4 @@ metadata:
 type: Opaque
 
 stringData:
-  DATABASE_URL: "postgresql://Akkalkot:Akkalkot%40413216@postgresql-service-pod:5432/axiondb"
+  DATABASE_URL: "postgresql://$(postgresUser):$(postgresPassword)@$(postgresHost):$(postgresPort)/$(postgresDb)?sslmode=require"
