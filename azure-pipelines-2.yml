@@ -1,0 +1,65 @@
+pool: axion-agent
+
+trigger:
+  - none
+
+parameters:
+
+- name: Docker_Build_&_push_ACR
+  displayName: Docker_Build_&_push_ACR
+  type: boolean
+  default: false
+
+ 
+- name: Namespace_Environment_For_Data_Simulstor 
+  displayName: Namespace_Environment_For_Data_Simulstor 
+  type: string
+  default: dev
+  values:
+  - dev
+  - prod
+
+
+variables:
+- group: Axion-Project_helm
+
+
+stages:
+  - stage: 
+    displayName: Docker_Build_&_push_ACR_For_Data_Simulstor
+    condition: eq('${{ parameters.Docker_Build_&_push_ACR }}', 'true')
+    jobs:
+      - job: 
+        displayName: Ingestion_Docker_Build&Push 
+        steps:
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'docker-acr-svc-connection'
+            repository: 'axion-data-simulator'
+            command: 'buildAndPush'
+            Dockerfile: '**/axion-data-simulator/Dockerfile'
+            tags: '$(Build.BuildId)-BuildId'
+       
+  - stage: 
+    displayName: Helm_deploy_to_cluster
+    condition: eq('${{ parameters.KubernNamespace_Environment_For_Data_Simulstorate_secrer }}', 'true')
+    jobs:
+      - job: 
+        displayName: Helm_deploy_to_cluster
+        steps:
+        - task: HelmDeploy@1
+          inputs:
+            connectionType: 'Azure Resource Manager'
+            azureSubscription: 'axion-helm-project'
+            azureResourceGroup: 'rg_sudarshan'
+            kubernetesCluster: 'kub-sudarshan'
+            namespace: '${{ parameters.Namespace_Environment }}'
+            command: 'upgrade'
+            chartType: 'FilePath'
+            chartPath: 'axion-data-simulator/helm/'
+            releaseName: 'axion-datasimulator'
+            valueFile: 'axion-data-simulator/helm/values-${{ parameters.Namespace_Environment }}.yaml'
+            install: true
+            waitForExecution: false
+            arguments: '--create-namespace --set image.tags=$(Build.BuildId)-BuildId'
+
