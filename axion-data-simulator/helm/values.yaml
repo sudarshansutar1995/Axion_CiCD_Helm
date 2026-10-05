@@ -1,0 +1,18 @@
+image: 
+    repositary : sudarshanacr.azurecr.io/axion-data-simulator
+    tags : d1 
+  
+secretKeyRef:
+    secret_name: simulator-secret
+
+app: datasimulator-service
+
+ports:
+    contPort: 8080
+
+
+type :  ClusterIP
+
+APIURL: http://ingestion.sudsutar.site/api/v1/telemetry/ingest
+
+

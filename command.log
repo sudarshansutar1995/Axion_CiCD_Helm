@@ -17,34 +17,44 @@ PSRemotingProtocolVersion: 2.3
 SerializationVersion: 1.1.0.1
 **********************
 Transcript started, output file is command.log
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply .\postgreSQL.yaml
 error: Unexpected args: [.\postgreSQL.yaml]
 See 'kubectl apply -h' for help and examples
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply .\postgreSQL.yaml -f
 error: flag needs an argument: 'f' in -f
 See 'kubectl apply --help' for usage.
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply -f .\postgreSQL.yaml 
 pod/postpresql created
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply -f .\UIpostgreSQL.yaml 
 pod/uipostgresql created
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply -f .\postgreSQLservice.yaml
 service/postgresql-service-pod created
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  apply -f .\UIpostgreSQLservice.yaml
 service/uipostpresql-service-pod created
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  get pods
 NAME           READY   STATUS    RESTARTS   AGE
 postpresql     1/1     Running   0          51s
 uipostgresql   1/1     Running   0          36s
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  get svc
 NAME                       TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 kubernetes                 ClusterIP   10.0.0.1      <none>        443/TCP    6m28s
 postgresql-service-pod     ClusterIP   10.0.19.141   <none>        5432/TCP   29s
 uipostpresql-service-pod   ClusterIP   10.0.54.24    <none>        80/TCP     17s
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl  get svc
 NAME                       TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 kubernetes                 ClusterIP   10.0.0.1      <none>        443/TCP    6m35s
 postgresql-service-pod     ClusterIP   10.0.19.141   <none>        5432/TCP   36s
 uipostpresql-service-pod   ClusterIP   10.0.54.24    <none>        80/TCP     24s
+
 PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject -Servicepod> kubectl port-forward  service/postgresql-service-pod 5432:5432
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432

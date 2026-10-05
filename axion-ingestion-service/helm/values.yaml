@@ -1,0 +1,19 @@
+app: ingestion-pod
+replicas: 3
+minReplicas: 1
+
+ports:
+  containerPort: 8000
+  port: 80
+
+image: 
+ repositary: sudarshanacr.azurecr.io/axion-ingestion-service
+ tags: d1
+
+secretKeyRef:
+  name: ingestion-secret
+
+metadata:
+  name: ingestion-hsa
+
+type: ClusterIP

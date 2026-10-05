@@ -1,0 +1,786 @@
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# Source: datasimulator/templates/axionui-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: axion-ui-ingress
+  namespace: default
+
+spec:
+  ingressClassName: azure-application-gateway
+
+  rules:
+    - host: axionui.sudsutar.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: axionui-service-pod
+                port:
+                  number: 80
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install  axion-ui .
+Error: INSTALLATION FAILED: unable to continue with install: HorizontalPodAutoscaler "ingestion-hsa" in namespace "default" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "axion-ui": current value is "axion-ingestion"
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm lint .             
+==> Linting .
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm template axion-ui .
+---
+# Source: datasimulator/templates/axionui-secreat.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: axion-ui-secret
+type: Opaque
+stringData:
+  VITE_API_BASE: "http://telemetry.sudsutar.site"
+---
+# Source: datasimulator/templates/axionservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: axionui-service-pod
+spec:
+  selector:
+    app: axion-ui
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: datasimulator/templates/axionui.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  axion-ui
+  labels:
+    app: axion-ui
+
+spec:
+  selector:
+    matchLabels:
+      app: axion-ui
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: axion-ui
+
+    spec:
+      containers:
+        - name: axion-ui
+          image: "sudarshan2026.azurecr.io/axionui:d1"
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          
+        
+---
+# Source: datasimulator/templates/axionui-hsa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "axion-ui-hsa"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: axion-ui
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# Source: datasimulator/templates/axionui-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: axion-ui-ingress
+  namespace: default
+
+spec:
+  ingressClassName: azure-application-gateway
+
+  rules:
+    - host: axionui.sudsutar.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: axionui-service-pod
+                port:
+                  number: 80
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install axion-ui . 
+NAME: axion-ui
+LAST DEPLOYED: Mon Oct  5 13:53:14 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  get pods       
+NAME                                READY   STATUS         RESTARTS   AGE
+axion-ingestion-587b4fc988-s85pb    1/1     Running        0          61m
+axion-ingestion-587b4fc988-scj77    1/1     Running        0          61m
+axion-ingestion-587b4fc988-sggvw    1/1     Running        0          61m
+axion-telemetary-859864b59c-294qs   1/1     Running        0          23m
+axion-telemetary-859864b59c-7dg86   1/1     Running        0          23m
+axion-telemetary-859864b59c-dzg94   1/1     Running        0          23m
+axion-ui-7c8c6cd494-mgxgz           0/1     ErrImagePull   0          11s
+axion-ui-7c8c6cd494-qvvmg           0/1     ErrImagePull   0          11s
+axion-ui-7c8c6cd494-sgnwj           0/1     ErrImagePull   0          11s
+data-simulator-f884c9c77-896zq      1/1     Running        0          30m
+pgaming-pod-hdww6                   1/1     Running        0          124m
+pgaming-pod-mgqjt                   1/1     Running        0          124m
+pgaming-pod-wsfj5                   1/1     Running        0          124m
+postgre-pod-9t8dc                   1/1     Running        0          124m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  describe axion-ui-7c8c6cd494-mgxgz
+error: the server doesn't have a resource type "axion-ui-7c8c6cd494-mgxgz"
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  describe pod axion-ui-7c8c6cd494-mgxgz
+Name:             axion-ui-7c8c6cd494-mgxgz
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             aks-agentpool-34185777-vmss000001/10.224.0.5
+Start Time:       Mon, 05 Oct 2026 13:53:15 +0530
+Labels:           app=axion-ui
+                  pod-template-hash=7c8c6cd494
+                  topology.kubernetes.io/region=centralindia
+                  topology.kubernetes.io/zone=centralindia-3
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.1.159
+IPs:
+  IP:           10.244.1.159
+Controlled By:  ReplicaSet/axion-ui-7c8c6cd494
+Containers:
+  axion-ui:
+    Container ID:   
+    Image:          sudarshan2026.azurecr.io/axionui:d1
+    Image ID:       
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Waiting
+      Reason:       ErrImagePull
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  512Mi
+    Requests:
+      cpu:        100m
+      memory:     128Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-dwnd2 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-dwnd2:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  30s                default-scheduler  Successfully assigned default/axion-ui-7c8c6cd494-mgxgz to aks-agentpool-34185777-vmss000001
+  Normal   Pulling    19s (x2 over 30s)  kubelet            spec.containers{axion-ui}: Pulling image "sudarshan2026.azurecr.io/axionui:d1"
+  Warning  Failed     19s (x2 over 30s)  kubelet            spec.containers{axion-ui}: Failed to pull image "sudarshan2026.azurecr.io/axionui:d1": failed to pull and unpack image "sudarshan2026.azurecr.io/axionui:d1": failed to resolve image: failed to do request: Head "https://sudarshan2026.azurecr.io/v2/axionui/manifests/d1": dial tcp: lookup sudarshan2026.azurecr.io on 168.63.129.16:53: no such host
+  Warning  Failed     19s (x2 over 30s)  kubelet            spec.containers{axion-ui}: Error: ErrImagePull
+  Normal   BackOff    4s (x2 over 30s)   kubelet            spec.containers{axion-ui}: Back-off pulling image "sudarshan2026.azurecr.io/axionui:d1"
+  Warning  Failed     4s (x2 over 30s)   kubelet            spec.containers{axion-ui}: Error: ImagePullBackOff
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm lint .                                    
+==> Linting .
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm template axion-ui .                       
+---
+# Source: datasimulator/templates/axionui-secreat.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: axion-ui-secret
+type: Opaque
+stringData:
+  VITE_API_BASE: "http://telemetry.sudsutar.site"
+---
+# Source: datasimulator/templates/axionservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: axionui-service-pod
+spec:
+  selector:
+    app: axion-ui
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: datasimulator/templates/axionui.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  axion-ui
+  labels:
+    app: axion-ui
+
+spec:
+  selector:
+    matchLabels:
+      app: axion-ui
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: axion-ui
+
+    spec:
+      containers:
+        - name: axion-ui
+          image: "sudarshan2026.azurecr.io/axion-ui:d1"
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          
+        
+---
+# Source: datasimulator/templates/axionui-hsa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "axion-ui-hsa"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: axion-ui
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# Source: datasimulator/templates/axionui-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: axion-ui-ingress
+  namespace: default
+
+spec:
+  ingressClassName: azure-application-gateway
+
+  rules:
+    - host: axionui.sudsutar.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: axionui-service-pod
+                port:
+                  number: 80
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install axion-ui .                        
+level=ERROR msg="release name check failed" error="cannot reuse a name that is still in use"
+Error: INSTALLATION FAILED: release name check failed: cannot reuse a name that is still in use
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm uninstall axion-ui  
+release "axion-ui" uninstalled
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install axion-ui . 
+NAME: axion-ui
+LAST DEPLOYED: Mon Oct  5 13:54:33 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  get pods                              
+NAME                                READY   STATUS         RESTARTS   AGE
+axion-ingestion-587b4fc988-s85pb    1/1     Running        0          63m
+axion-ingestion-587b4fc988-scj77    1/1     Running        0          63m
+axion-ingestion-587b4fc988-sggvw    1/1     Running        0          63m
+axion-telemetary-859864b59c-294qs   1/1     Running        0          24m
+axion-telemetary-859864b59c-7dg86   1/1     Running        0          24m
+axion-telemetary-859864b59c-dzg94   1/1     Running        0          24m
+axion-ui-6cbb5c999c-6l6wv           0/1     ErrImagePull   0          4s
+axion-ui-6cbb5c999c-7wnx9           0/1     ErrImagePull   0          4s
+axion-ui-6cbb5c999c-kflpd           0/1     ErrImagePull   0          4s
+data-simulator-f884c9c77-896zq      1/1     Running        0          31m
+pgaming-pod-hdww6                   1/1     Running        0          125m
+pgaming-pod-mgqjt                   1/1     Running        0          125m
+pgaming-pod-wsfj5                   1/1     Running        0          125m
+postgre-pod-9t8dc                   1/1     Running        0          125m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm uninstall axion-ui 
+release "axion-ui" uninstalled
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm lint .             
+==> Linting .
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm template  axion-ui .                            
+---
+# Source: datasimulator/templates/axionui-secreat.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: axion-ui-secret
+type: Opaque
+stringData:
+  VITE_API_BASE: "http://telemetry.sudsutar.site"
+---
+# Source: datasimulator/templates/axionservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: axionui-service-pod
+spec:
+  selector:
+    app: axion-ui
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: datasimulator/templates/axionui.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  axion-ui
+  labels:
+    app: axion-ui
+
+spec:
+  selector:
+    matchLabels:
+      app: axion-ui
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: axion-ui
+
+    spec:
+      containers:
+        - name: axion-ui
+          image: "sudarshanacr.azurecr.io/axion-ui:d1:d1"
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          
+        
+---
+# Source: datasimulator/templates/axionui-hsa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "axion-ui-hsa"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: axion-ui
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# Source: datasimulator/templates/axionui-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: axion-ui-ingress
+  namespace: default
+
+spec:
+  ingressClassName: azure-application-gateway
+
+  rules:
+    - host: axionui.sudsutar.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: axionui-service-pod
+                port:
+                  number: 80
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install  axion-ui . 
+NAME: axion-ui
+LAST DEPLOYED: Mon Oct  5 13:56:02 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  get pods        
+NAME                                READY   STATUS             RESTARTS   AGE
+axion-ingestion-587b4fc988-s85pb    1/1     Running            0          64m
+axion-ingestion-587b4fc988-scj77    1/1     Running            0          64m
+axion-ingestion-587b4fc988-sggvw    1/1     Running            0          64m
+axion-telemetary-859864b59c-294qs   1/1     Running            0          25m
+axion-telemetary-859864b59c-7dg86   1/1     Running            0          25m
+axion-telemetary-859864b59c-dzg94   1/1     Running            0          25m
+axion-ui-86696dbfb4-8xkkx           0/1     InvalidImageName   0          3s
+axion-ui-86696dbfb4-bmqm9           0/1     InvalidImageName   0          3s
+axion-ui-86696dbfb4-hsbzv           0/1     InvalidImageName   0          3s
+data-simulator-f884c9c77-896zq      1/1     Running            0          32m
+pgaming-pod-hdww6                   1/1     Running            0          126m
+pgaming-pod-mgqjt                   1/1     Running            0          126m
+pgaming-pod-wsfj5                   1/1     Running            0          126m
+postgre-pod-9t8dc                   1/1     Running            0          127m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  describe pod axion-ui-86696dbfb4-8xkkx
+Name:             axion-ui-86696dbfb4-8xkkx
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             aks-agentpool-34185777-vmss000000/10.224.0.4
+Start Time:       Mon, 05 Oct 2026 13:56:03 +0530
+Labels:           app=axion-ui
+                  pod-template-hash=86696dbfb4
+                  topology.kubernetes.io/region=centralindia
+                  topology.kubernetes.io/zone=centralindia-3
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.243
+IPs:
+  IP:           10.244.0.243
+Controlled By:  ReplicaSet/axion-ui-86696dbfb4
+Containers:
+  axion-ui:
+    Container ID:   
+    Image:          sudarshanacr.azurecr.io/axion-ui:d1:d1
+    Image ID:       
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Waiting
+      Reason:       InvalidImageName
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  512Mi
+    Requests:
+      cpu:        100m
+      memory:     128Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-j6x56 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-j6x56:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason         Age               From               Message
+  ----     ------         ----              ----               -------
+  Normal   Scheduled      29s               default-scheduler  Successfully assigned default/axion-ui-86696dbfb4-8xkkx to aks-agentpool-34185777-vmss000000
+  Warning  InspectFailed  6s (x4 over 28s)  kubelet            spec.containers{axion-ui}: Failed to apply default image tag "sudarshanacr.azurecr.io/axion-ui:d1:d1": couldn't parse image name "sudarshanacr.azurecr.io/axion-ui:d1:d1": invalid reference format
+  Warning  Failed         6s (x4 over 28s)  kubelet            spec.containers{axion-ui}: Error: InvalidImageName
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm uninstall axion-ui                        
+release "axion-ui" uninstalled
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm lint .                                    
+==> Linting .
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm template  axion-ui .                      
+---
+# Source: datasimulator/templates/axionui-secreat.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: axion-ui-secret
+type: Opaque
+stringData:
+  VITE_API_BASE: "http://telemetry.sudsutar.site"
+---
+# Source: datasimulator/templates/axionservice.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: axionui-service-pod
+spec:
+  selector:
+    app: axion-ui
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: datasimulator/templates/axionui.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  axion-ui
+  labels:
+    app: axion-ui
+
+spec:
+  selector:
+    matchLabels:
+      app: axion-ui
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: axion-ui
+
+    spec:
+      containers:
+        - name: axion-ui
+          image: "sudarshanacr.azurecr.io/axion-ui:d1"
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          
+        
+---
+# Source: datasimulator/templates/axionui-hsa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "axion-ui-hsa"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: axion-ui
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# Source: datasimulator/templates/axionui-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: axion-ui-ingress
+  namespace: default
+
+spec:
+  ingressClassName: azure-application-gateway
+
+  rules:
+    - host: axionui.sudsutar.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: axionui-service-pod
+                port:
+                  number: 80
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> helm install  axion-ui .                       
+NAME: axion-ui
+LAST DEPLOYED: Mon Oct  5 13:57:01 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl  get pods                              
+NAME                                READY   STATUS    RESTARTS   AGE
+axion-ingestion-587b4fc988-s85pb    1/1     Running   0          65m
+axion-ingestion-587b4fc988-scj77    1/1     Running   0          65m
+axion-ingestion-587b4fc988-sggvw    1/1     Running   0          65m
+axion-telemetary-859864b59c-294qs   1/1     Running   0          26m
+axion-telemetary-859864b59c-7dg86   1/1     Running   0          26m
+axion-telemetary-859864b59c-dzg94   1/1     Running   0          26m
+axion-ui-d54bffc5f-b5k4q            1/1     Running   0          4s
+axion-ui-d54bffc5f-klsgh            1/1     Running   0          4s
+axion-ui-d54bffc5f-r56q9            1/1     Running   0          4s
+data-simulator-f884c9c77-896zq      1/1     Running   0          33m
+pgaming-pod-hdww6                   1/1     Running   0          127m
+pgaming-pod-mgqjt                   1/1     Running   0          127m
+pgaming-pod-wsfj5                   1/1     Running   0          127m
+postgre-pod-9t8dc                   1/1     Running   0          128m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get ingress
+NAME                CLASS                       HOSTS                     ADDRESS         PORTS   AGE
+axion-ui-ingress    azure-application-gateway   axionui.sudsutar.site                     80      13s
+ingestion-ingress   azure-application-gateway   ingestion.sudsutar.site   98.70.219.189   80      85m
+telemetry-ingress   azure-application-gateway   telemetry.sudsutar.site   98.70.219.189   80      26m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get ingress
+NAME                CLASS                       HOSTS                     ADDRESS         PORTS   AGE
+axion-ui-ingress    azure-application-gateway   axionui.sudsutar.site                     80      16s
+ingestion-ingress   azure-application-gateway   ingestion.sudsutar.site   98.70.219.189   80      85m
+telemetry-ingress   azure-application-gateway   telemetry.sudsutar.site   98.70.219.189   80      26m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get ingress
+NAME                CLASS                       HOSTS                     ADDRESS         PORTS   AGE
+axion-ui-ingress    azure-application-gateway   axionui.sudsutar.site     98.70.219.189   80      19s
+ingestion-ingress   azure-application-gateway   ingestion.sudsutar.site   98.70.219.189   80      86m
+telemetry-ingress   azure-application-gateway   telemetry.sudsutar.site   98.70.219.189   80      26m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl rollout restart deployment ingress-appgw-deployment -n kube-system
+deployment.apps/ingress-appgw-deployment restarted
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get ingress                                                       
+NAME                CLASS                       HOSTS                     ADDRESS         PORTS   AGE
+axion-ui-ingress    azure-application-gateway   axionui.sudsutar.site     98.70.219.189   80      2m11s
+ingestion-ingress   azure-application-gateway   ingestion.sudsutar.site   98.70.219.189   80      87m
+telemetry-ingress   azure-application-gateway   telemetry.sudsutar.site   98.70.219.189   80      28m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> 
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> 
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get ingress
+NAME                CLASS                       HOSTS                     ADDRESS         PORTS   AGE
+axion-ui-ingress    azure-application-gateway   axionui.sudsutar.site     98.70.219.189   80      5m11s
+ingestion-ingress   azure-application-gateway   ingestion.sudsutar.site   98.70.219.189   80      90m
+telemetry-ingress   azure-application-gateway   telemetry.sudsutar.site   98.70.219.189   80      31m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get pods   
+NAME                                READY   STATUS    RESTARTS   AGE
+axion-ingestion-587b4fc988-s85pb    1/1     Running   0          70m
+axion-ingestion-587b4fc988-scj77    1/1     Running   0          70m
+axion-ingestion-587b4fc988-sggvw    1/1     Running   0          70m
+axion-telemetary-859864b59c-294qs   1/1     Running   0          31m
+axion-telemetary-859864b59c-7dg86   1/1     Running   0          31m
+axion-telemetary-859864b59c-dzg94   1/1     Running   0          31m
+axion-ui-d54bffc5f-klsgh            1/1     Running   0          5m17s
+data-simulator-f884c9c77-896zq      1/1     Running   0          38m
+pgaming-pod-hdww6                   1/1     Running   0          133m
+pgaming-pod-mgqjt                   1/1     Running   0          133m
+pgaming-pod-wsfj5                   1/1     Running   0          133m
+postgre-pod-9t8dc                   1/1     Running   0          133m                                            
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> kubectl get svc 
+NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+axionui-service-pod         ClusterIP   10.0.201.189   <none>        80/TCP     5m35s
+datasimulator-service-pod   ClusterIP   10.0.221.169   <none>        8080/TCP   39m
+ingestion-service-pod       ClusterIP   10.0.234.78    <none>        80/TCP     91m
+kubernetes                  ClusterIP   10.0.0.1       <none>        443/TCP    146m
+postgresql-service-pod      ClusterIP   10.0.160.229   <none>        5432/TCP   133m
+telemetry-service-pod       ClusterIP   10.0.55.181    <none>        80/TCP     32m
+uipostpresql-service-pod    ClusterIP   10.0.41.9      <none>        80/TCP     133m
+PS F:\DevOpsInsiders\kubernet\kubernet Example\AxionProject_HSA_Dockar_Secreat -Helm\axion-ui\helm> 
