@@ -1,16 +1,26 @@
+
 app: axion-ui
-replicas: 3
-minReplicas: 1
+
+replicaCount: 3
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 70
 
 ports:
   containerPort: 80
   port: 80
 
-image: 
- repositary: sudarshanacr.azurecr.io/axion-ui
- 
+image:
+  repository: sudarshanacr.azurecr.io/axion-ui
+  tags: latest
+
 metadata:
   name: axion-ui
-  Ingressname: axion-ui-ingress
+  ingressName: axion-ui-ingress
 
 type: ClusterIP
+
