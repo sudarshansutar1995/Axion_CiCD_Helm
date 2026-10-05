@@ -46,7 +46,6 @@ stages:
             scriptType: 'ps'
             scriptLocation: 'inlineScript'
             inlineScript: |
-              inlineScript: |
                 Write-Host "Applying telemetry schema..."
               
                 psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
@@ -60,8 +59,8 @@ stages:
               
                 Write-Host "Schema deployment successful."
               
-              env:
-                PGPASSWORD: $(postgresPassword)
+          env:
+            PGPASSWORD: $(postgresPassword)
   - stage: 
     displayName: Show_table_detail
     jobs:
