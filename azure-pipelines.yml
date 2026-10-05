@@ -1,6 +1,10 @@
 pool: axion-agent
 trigger:
   - none
+
+variables:
+- group: axion_Variable
+
 stages:
   - stage: 
     displayName: Database_connection
