@@ -75,18 +75,17 @@ stages:
             scriptType: 'ps'
             scriptLocation: 'inlineScript'
             inlineScript: |
-              inlineScript: |
-                Write-Host "Showing database table details..."
+              Write-Host "Showing database table details..."
               
-                psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-                  -c "SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position;"
+                  psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+                    -c "SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position;"
               
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Error "Failed to retrieve database table details."
-                    exit $LASTEXITCODE
-                }
+                  if ($LASTEXITCODE -ne 0) {
+                      Write-Error "Failed to retrieve database table details."
+                      exit $LASTEXITCODE
+                  }
               
-                Write-Host "Database table details retrieved successfully."
+                  Write-Host "Database table details retrieved successfully."
               
               env:
                 PGPASSWORD: $(postgresPassword)
