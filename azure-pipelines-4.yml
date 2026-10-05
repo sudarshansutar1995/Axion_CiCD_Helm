@@ -1,3 +1,4 @@
+
 pool: axion-agent
 
 trigger:
@@ -22,7 +23,6 @@ parameters:
   values:
   - dev
   - prod
-
 
 variables:
 - group: Axion-Project_helm
@@ -74,7 +74,8 @@ stages:
     steps:
 
     - task: HelmDeploy@1
-      displayName: Helm Upgrade/Install Axion UI
+      displayName: Helm Upgrade or Install Axion UI
+
       inputs:
         connectionType: 'Azure Resource Manager'
         azureSubscription: 'axion-helm-project'
@@ -95,5 +96,7 @@ stages:
         install: true
         waitForExecution: false
 
-        arguments: '--create-namespace --set image.tags=$(Build.BuildId)-BuildId'
+        arguments: >
+          --create-namespace
+          --set image.tags=$(Build.BuildId)-BuildId
 
