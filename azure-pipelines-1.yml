@@ -66,7 +66,7 @@ stages:
             releaseName: 'axion-ingestion'
             valueFile: 'axion-ingestion-service/helm/values-${{ parameters.Namespace_Environment }}.yaml'
             install: true
-            waitForExecution: true
+            waitForExecution: false
             arguments: '--create-namespace'
 
 
