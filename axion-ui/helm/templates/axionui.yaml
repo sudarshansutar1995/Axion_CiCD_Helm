@@ -1,31 +1,38 @@
 
-
-
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
-  name:  {{.Release.Name}}
+  name: {{ .Release.Name }}
   labels:
-    app: {{.Values.app}}
+    app: {{ .Values.app }}
 
 spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+
   selector:
     matchLabels:
-      app: {{.Values.app}}
-
-  replicas: 3
+      app: {{ .Values.app }}
 
   template:
     metadata:
       labels:
-        app: {{.Values.app}}
+        app: {{ .Values.app }}
 
     spec:
       containers:
-        - name: {{.Values.app}}
-          image: "{{.Values.image.repositary}}:{{.Values.image.tags}}"
+        - name: {{ .Values.app }}
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tags }}"
+
           ports:
-            - containerPort: {{.Values.ports.containerPort}}
+            - containerPort: {{ .Values.ports.containerPort }}
+
+          envFrom:
+            - secretRef:
+                name: axion-ui-secret
 
           resources:
             requests:
@@ -36,5 +43,3 @@ spec:
               cpu: "500m"
               memory: "512Mi"
 
-          
-        
