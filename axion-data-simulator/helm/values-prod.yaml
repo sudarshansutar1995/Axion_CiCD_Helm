@@ -1,6 +1,5 @@
 image: 
-    repositary : sudarshanacr.azurecr.io/axion-data-simulator
-    tags : d1 
+    repositary : sudarshanacr.azurecr.io/axion-data-simulator 
   
 secretKeyRef:
     secret_name: simulator-secret
