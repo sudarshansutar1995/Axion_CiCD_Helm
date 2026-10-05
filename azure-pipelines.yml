@@ -1,4 +1,5 @@
 pool: axion-agent
+
 trigger:
   - none
 
@@ -6,88 +7,108 @@ variables:
 - group: Axion-Project_helm
 
 stages:
-  - stage: 
-    displayName: Database_connection
-    jobs:
-      - job: 
-        displayName: Database_connection
-        steps:
-        - task: AzureCLI@3
-          inputs:
-            connectionType: 'azureRM'
-            azureSubscription: 'axion-helm-project'
-            scriptType: 'ps'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-              Write-Host "Testing PostgreSQL connection..."
-              
-                    psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-                      -c "SELECT current_database();"
-              
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Database connection failed."
-                        exit $LASTEXITCODE
-                    }
-              
-                    Write-Host "Database connection successful."
-          env:
-            PGPASSWORD: $(postgresPassword)    
-  - stage: 
-    displayName: Apply_Database_scehma
-    jobs:
-      - job: 
-        displayName: Apply_Database_scehma
-        
-        steps:
-        - task: AzureCLI@3
-          inputs:
-            connectionType: 'azureRM'
-            azureSubscription: 'axion-helm-project'
-            scriptType: 'ps'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-                Write-Host "Applying telemetry schema..."
-              
-                psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-                  -v ON_ERROR_STOP=1 `
-                  -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
-              
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Error "Schema deployment failed."
-                    exit $LASTEXITCODE
-                }
-              
-                Write-Host "Schema deployment successful."
-              
-          env:
-            PGPASSWORD: $(postgresPassword)
-  - stage: 
-    displayName: Show_table_detail
-    jobs:
-      - job: 
-        displayName: Show_table_detail
-        
-        steps:
-        - task: AzureCLI@3
-          inputs:
-            connectionType: 'azureRM'
-            azureSubscription: 'axion-helm-project'
-            scriptType: 'ps'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-              Write-Host "Showing database table details..."
-              
-                  psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
-                    -c "SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position;"
-              
-                  if ($LASTEXITCODE -ne 0) {
-                      Write-Error "Failed to retrieve database table details."
-                      exit $LASTEXITCODE
-                  }
-              
-                  Write-Host "Database table details retrieved successfully."
-              
-              env:
-                PGPASSWORD: $(postgresPassword)
-      
 
+# ============================================================
+# Stage 1: Database Connection
+# ============================================================
+- stage: Database_Connection
+  displayName: Database Connection
+
+  jobs:
+  - job: Database_Connection
+    displayName: Database Connection
+
+    steps:
+    - task: AzureCLI@3
+      displayName: Test PostgreSQL Connection
+      inputs:
+        connectionType: 'azureRM'
+        azureSubscription: 'axion-helm-project'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Testing PostgreSQL connection..."
+
+          psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+            -c "SELECT current_database();"
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Database connection failed."
+              exit $LASTEXITCODE
+          }
+
+          Write-Host "Database connection successful."
+
+      env:
+        PGPASSWORD: $(postgresPassword)
+
+
+# ============================================================
+# Stage 2: Apply Database Schema
+# ============================================================
+- stage: Apply_Database_Schema
+  displayName: Apply Database Schema
+
+  jobs:
+  - job: Apply_Database_Schema
+    displayName: Apply Database Schema
+
+    steps:
+    - task: AzureCLI@3
+      displayName: Apply Telemetry Schema
+      inputs:
+        connectionType: 'azureRM'
+        azureSubscription: 'axion-helm-project'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Applying telemetry schema..."
+
+          psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+            -v ON_ERROR_STOP=1 `
+            -f "$(Build.SourcesDirectory)\axion-database-schema\02-telemetry.sql"
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Schema deployment failed."
+              exit $LASTEXITCODE
+          }
+
+          Write-Host "Schema deployment successful."
+
+      env:
+        PGPASSWORD: $(postgresPassword)
+
+
+# ============================================================
+# Stage 3: Show Table Details
+# ============================================================
+- stage: Show_Table_Detail
+  displayName: Show Table Details
+
+  jobs:
+  - job: Show_Table_Detail
+    displayName: Show Table Details
+
+    steps:
+    - task: AzureCLI@3
+      displayName: Show Database Table Details
+      inputs:
+        connectionType: 'azureRM'
+        azureSubscription: 'axion-helm-project'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Showing database table details..."
+
+          psql "host=$(postgresHost) port=$(postgresPort) dbname=$(postgresDb) user=$(postgresUser) sslmode=require connect_timeout=10" `
+            -c "SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position;"
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to retrieve database table details."
+              exit $LASTEXITCODE
+          }
+
+          Write-Host "Database table details retrieved successfully."
+
+      env:
+        PGPASSWORD: $(postgresPassword)
