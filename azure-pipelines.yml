@@ -3,7 +3,7 @@ trigger:
   - none
 
 variables:
-- group: axion_Variable
+- group: Axion-Project_helm
 
 stages:
   - stage: 
@@ -30,5 +30,7 @@ stages:
                     }
               
                     Write-Host "Database connection successful."
+          env:
+            PGPASSWORD: $(postgresPassword)    
         
 
