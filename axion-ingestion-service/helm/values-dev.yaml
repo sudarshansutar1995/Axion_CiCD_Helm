@@ -1,5 +1,5 @@
 app: ingestion-pod
-replicas: 3
+replicas: 2
 minReplicas: 1
 
 ports:
