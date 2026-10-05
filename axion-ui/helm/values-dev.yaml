@@ -3,6 +3,10 @@ app: axion-ui
 
 replicaCount: 2
 
+ingress:
+  enabled: true
+  host: axion-ui.sudsutar.site
+
 autoscaling:
   enabled: true
   minReplicas: 1
