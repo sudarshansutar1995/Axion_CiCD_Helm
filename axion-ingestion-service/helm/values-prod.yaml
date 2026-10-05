@@ -17,3 +17,4 @@ metadata:
   name: ingestion-hsa
 
 type: ClusterIP
+namespace: prod
