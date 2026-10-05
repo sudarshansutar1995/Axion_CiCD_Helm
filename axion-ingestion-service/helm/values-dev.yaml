@@ -8,7 +8,7 @@ ports:
 
 image: 
  repositary: sudarshanacr.azurecr.io/axion-ingestion-service
- tags: d1
+
 
 secretKeyRef:
   name: ingestion-secret
